@@ -21,7 +21,6 @@ const extensionsByMime = {
 	'video/mp4': 'mp4'
 }
 
-
 chrome.devtools.panels.create(Strings.panel_title, '', 'panel.html', panel => {
 	panel.onShown.addListener(win => App(win.document.body))
 })
@@ -31,12 +30,13 @@ const files = new Map()
 const r = createElement
 const refReqList = useRef()
 
-function App(body) {
+async function App(body) {
 	return body.append(
 		r('div', null,
 			r('a', {
-				download: 'requests.tar',
-				onClick: async function donwloadTar() {
+				href: '',
+				download: (await urlHostname() || 'requests') + '.tar',
+				onClick: async function downloadTar() {
 					const writer = new TarWriter()
 					for (const [filename, body] of files)
 						writer.addFile(filename, body)
@@ -50,8 +50,19 @@ function App(body) {
 }
 
 function renderFilenameOnList(filename) {
-	refReqList.current.appendChild(
-		r('li', null, filename))
+	if (refReqList.current)
+		refReqList.current.appendChild(r('li', null, filename))
+}
+
+function urlHostname() {
+	return new Promise((resolve, reject) => {
+		chrome.devtools.inspectedWindow.eval('location.href', (response, error) => {
+			if (error)
+				resolve('')
+			else
+				resolve(new URL(response).hostname)
+		})
+	})
 }
 
 function registerRequest(request) {

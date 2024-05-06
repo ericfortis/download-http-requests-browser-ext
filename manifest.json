@@ -9,7 +9,7 @@
   ],
   "content_scripts": [
     {
-      "matches": ["https://*/*"],
+      "matches": ["<all_urls>"],
       "js": [
         "node_modules/@gera2ld/tarjs/dist/index.js"
       ]
