@@ -1,8 +1,9 @@
 const { TarWriter } = window.tarjs
 
 const Strings = {
-	panel_title: 'HTTP Requests',
-	download_tar: 'Download Tar'
+	download_tar: 'Download Tar',
+	filter: 'Filter',
+	panel_title: 'HTTP Requests'
 }
 
 const extensionsByMime = {
@@ -27,19 +28,31 @@ chrome.devtools.panels.create(Strings.panel_title, '', 'panel.html', panel => {
 chrome.devtools.network.onRequestFinished.addListener(registerRequest)
 
 const files = new Map()
+let filter = ''
+
 const r = createElement
+const refFilter = useRef()
 const refReqList = useRef()
 
 async function App(body) {
 	return body.append(
 		r('div', null,
+			r('label', null, Strings.filter,
+				r('input', {
+					ref: refReqList,
+					onChange: function filterFileList(event) {
+						filter = event.target.value
+						reRenderList()
+					}
+				})),
 			r('a', {
 				href: '',
 				download: (await urlHostname() || 'requests') + '.tar',
 				onClick: async function downloadTar() {
 					const writer = new TarWriter()
 					for (const [filename, body] of files)
-						writer.addFile(filename, body)
+						if (filename.includes(filter))
+							writer.addFile(filename, body)
 					const blob = await writer.write()
 					this.href = URL.createObjectURL(blob)
 				}
@@ -50,8 +63,14 @@ async function App(body) {
 }
 
 function renderFilenameOnList(filename) {
-	if (refReqList.current)
+	if (refReqList.current && filename.includes(filter))
 		refReqList.current.appendChild(r('li', null, filename))
+}
+
+function reRenderList() {
+	refReqList.current.innerHTML = ''
+	for (const [filename, body] of files)
+		renderFilenameOnList(filename)
 }
 
 function urlHostname() {
