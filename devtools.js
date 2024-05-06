@@ -26,6 +26,7 @@ chrome.devtools.panels.create(Strings.panel_title, '', 'panel.html', panel => {
 	panel.onShown.addListener(win => App(win.document.body))
 })
 chrome.devtools.network.onRequestFinished.addListener(registerRequest)
+chrome.devtools.network.onNavigated.addListener(clearList)
 
 const files = new Map()
 let filter = ''
@@ -68,9 +69,14 @@ function renderFilenameOnList(filename) {
 }
 
 function reRenderList() {
-	refReqList.current.innerHTML = ''
+	clearList()
 	for (const [filename, body] of files)
 		renderFilenameOnList(filename)
+}
+
+function clearList() {
+	if (refReqList.current)
+		refReqList.current.innerHTML = ''
 }
 
 function urlHostname() {
