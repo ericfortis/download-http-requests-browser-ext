@@ -33,7 +33,6 @@ const files = new Map()
 let filter = ''
 
 const r = createElement
-const refFilter = useRef()
 const refReqList = useRef()
 
 function registerRequest(request) {
@@ -58,7 +57,6 @@ async function App() {
     r('div', null,
       r('label', null, Strings.filter,
         r('input', {
-          ref: refReqList,
           onKeyUp: function filterFileList() {
             filter = this.value
             reRenderList()
