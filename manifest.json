@@ -4,9 +4,6 @@
   "manifest_version": 3,
   "version": "1.0",
   "devtools_page": "devtools.html",
-  "permissions": [
-    "system.memory"
-  ],
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
