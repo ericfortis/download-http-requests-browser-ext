@@ -1,0 +1,10 @@
+{
+  "name": "save-requests-ext",
+  "description": "Extension for downloading a tar with the HTTP requests",
+  "manifest_version": 3,
+  "version": "1.0",
+  "devtools_page": "devtools.html",
+  "permissions": [
+    "system.memory"
+  ]
+}
