@@ -1,4 +1,4 @@
-# DevTools extension for exporting HTTP requests as Tar 
+# DevTools extension for exporting HTTP requests as Tar
 
 ## Filename Convention
 - path
