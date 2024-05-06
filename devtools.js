@@ -46,6 +46,14 @@ function registerRequest(request) {
 }
 
 async function App() {
+	const downloadLinkStyle = {
+		background: 'dodgerblue',
+		borderRadius: '6px',
+		color: 'white',
+		marginLeft: '12px',
+		padding: '10px',
+		textDecoration: 'none',
+	}
 	return (
 		r('div', null,
 			r('label', null, Strings.filter,
@@ -57,6 +65,7 @@ async function App() {
 					}
 				})),
 			r('a', {
+				style: downloadLinkStyle,
 				href: '',
 				download: (await urlHostname() || 'requests') + '.tar',
 				onClick: async function downloadTar() {
