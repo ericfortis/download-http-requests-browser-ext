@@ -22,6 +22,27 @@ const extensionsByMime = {
   'video/mp4': 'mp4'
 }
 
+const Styles = {
+  downloadTarButton: {
+    background: 'dodgerblue',
+    border: 0,
+    borderRadius: '6px',
+    color: 'white',
+    cursor: 'pointer',
+    marginLeft: '12px',
+    padding: '10px',
+    textDecoration: 'none',
+  },
+  downloadIndividualResourceButton: {
+    background: 'none',
+    border: 0,
+    color: 'dodgerblue',
+    cursor: 'pointer',
+    textDecoration: 'underline',
+  }
+}
+
+
 chrome.devtools.panels.create(Strings.panel_title, '', 'panel.html', panel => {
   panel.onShown.addListener(async win =>
     win.document.body.append(await App()))
@@ -58,16 +79,6 @@ function registerRequest(request) {
 }
 
 async function App() {
-  const downloadButtonStyle = {
-    background: 'dodgerblue',
-    border: 0,
-    borderRadius: '6px',
-    color: 'white',
-    cursor: 'pointer',
-    marginLeft: '12px',
-    padding: '10px',
-    textDecoration: 'none'
-  }
   return (
     r('div', null,
       r('label', null, Strings.filter,
@@ -79,7 +90,7 @@ async function App() {
         })),
       r('button', {
         type: 'button',
-        style: downloadButtonStyle,
+        style: Styles.downloadTarButton,
         async onClick() {
           const filename = (await urlHostname() || 'requests') + '.tar'
           download(filename, await makeTar())
@@ -90,14 +101,13 @@ async function App() {
       })))
 }
 
-
-
 function renderFilenameOnList(filename) {
   if (refReqList.current && filename.includes(filter))
     refReqList.current.appendChild(
       r('li', null,
         r('button', {
           type: 'button',
+          style: Styles.downloadIndividualResourceButton,
           onClick() {
             download(filename, files.get(filename))
           }
@@ -114,6 +124,9 @@ function clearList() {
   if (refReqList.current)
     refReqList.current.innerHTML = ''
 }
+
+
+/* === Utils === */
 
 function urlHostname() {
   return new Promise((resolve, reject) => {
