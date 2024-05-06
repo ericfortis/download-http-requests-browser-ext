@@ -45,17 +45,35 @@ const refReqList = useRef()
 function registerRequest(request) {
   const { url, method } = request.request
   const { status, content } = request.response
+  if (status !== 200) // Partial Content (e.g. videos) or 304's (cached)
+    return
   const path = new URL(url).pathname
   const filename = `${path}.${method}.${status}${extForMime(content.mimeType)}`
-  request.getContent(body => files.set(filename, body))
+  request.getContent((body, encoding) => {
+    let blob
+    if (encoding === 'base64') {
+      // https://stackoverflow.com/a/16245768
+      const byteCharacters = atob(body)
+      const byteNumbers = new Array(byteCharacters.length)
+      for (let i = 0; i < byteCharacters.length; i++)
+        byteNumbers[i] = byteCharacters.charCodeAt(i)
+      const byteArray = new Uint8Array(byteNumbers)
+      blob = new Blob([byteArray], { type: content.mimeType })
+    }
+    else
+      blob = body
+    files.set(filename, blob)
+  })
   renderFilenameOnList(filename)
 }
 
 async function App() {
-  const downloadLinkStyle = {
+  const downloadButtonStyle = {
     background: 'dodgerblue',
+    border: 0,
     borderRadius: '6px',
     color: 'white',
+    cursor: 'pointer',
     marginLeft: '12px',
     padding: '10px',
     textDecoration: 'none'
@@ -69,12 +87,12 @@ async function App() {
             reRenderList()
           }
         })),
-      r('a', {
-        style: downloadLinkStyle,
-        href: '',
-        download: (await urlHostname() || 'requests') + '.tar',
-        onClick: async function downloadTar() {
-          this.href = URL.createObjectURL(await makeTar())
+      r('button', {
+        type: 'button',
+        style: downloadButtonStyle,
+        async onClick() {
+          const filename = (await urlHostname() || 'requests') + '.tar'
+          download(filename, await makeTar())
         }
       }, Strings.download_tar),
       r('ul', {
@@ -82,9 +100,18 @@ async function App() {
       })))
 }
 
+
+
 function renderFilenameOnList(filename) {
   if (refReqList.current && filename.includes(filter))
-    refReqList.current.appendChild(r('li', null, filename))
+    refReqList.current.appendChild(
+      r('li', null,
+        r('button', {
+          type: 'button',
+          onClick() {
+            download(filename, files.get(filename))
+          }
+        }, filename)))
 }
 
 function reRenderList() {
@@ -109,6 +136,18 @@ function urlHostname() {
   })
 }
 
+// https://stackoverflow.com/a/19328891
+function download(filename, blob) {
+  const url = URL.createObjectURL(blob)
+  const a = r('a', {
+    href: url,
+    download: filename,
+    style: { display: 'none' }
+  })
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
+}
 
 // API similar to React.createElement
 // https://github.com/uxtely/js-utils/blob/main/react-create-element/createElement.js
