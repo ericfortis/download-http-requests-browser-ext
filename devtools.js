@@ -42,7 +42,7 @@ async function App() {
 			r('label', null, Strings.filter,
 				r('input', {
 					ref: refReqList,
-					onChange: function filterFileList() {
+					onKeyUp: function filterFileList() {
 						filter = this.value
 						reRenderList()
 					}
