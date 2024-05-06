@@ -122,7 +122,8 @@ function reRenderList() {
 
 function clearList() {
   if (refReqList.current)
-    refReqList.current.innerHTML = ''
+    while (refReqList.current.firstChild)
+      refReqList.current.removeChild(refReqList.current.firstChild)
 }
 
 
