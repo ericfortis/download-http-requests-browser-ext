@@ -1,19 +1,54 @@
 const r = upsertElement
 
+const mimes = {
+	'application/javascript': 'js',
+	'application/json': 'json',
+	'application/zip': 'zip',
+	'image/avif': 'avif',
+	'image/jpg': 'jpg',
+	'image/png': 'png',
+	'image/svg+xml': 'svg',
+	'image/webp': 'webp',
+	'image/x-icon': 'ico',
+	'text/css': 'css',
+	'text/html': 'html',
+	'text/plain': 'txt',
+	'video/mp4': 'mp4'
+}
+
+function extForMime(mime) {
+	const ext = mimes[mime]
+	return ext
+		? '.' + ext
+		: ''
+}
+function mimeFor(filename) {
+	const mime = mimes[filename.replace(/.*\./, '')]
+	if (mime)
+		return mime
+	throw `Missing MIME for ${filename}`
+}
+
+
 const refList = useRef()
 
-chrome.devtools.panels.create("Sample Panel", '', "panel.html", panel => {
+chrome.devtools.panels.create("HTTP Requests", '', "panel.html", panel => {
 	panel.onShown.addListener(win => {
 		win.document.body.append(
 			r('div', null,
-				r('h1', null, 'HTTP Requests'),
 				r('ul', { ref: refList })))
 	})
 })
 
+const files = new Map()
+
 chrome.devtools.network.onRequestFinished.addListener(request => {
-	console.log(request)
-	request.getContent(body => console.log(body))
+	const { url, method } = request.request
+	const { status, content } = request.response
+	const path = new URL(url).pathname
+	const filename = `${path}.${method}.${status}${extForMime(content.mimeType)}`
+	request.getContent(body => files.set(filename, body))
+	refList.current.appendChild(r('li', null, filename))
 })
 
 
