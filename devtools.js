@@ -31,14 +31,14 @@ const Styles = {
     cursor: 'pointer',
     marginLeft: '12px',
     padding: '10px',
-    textDecoration: 'none',
+    textDecoration: 'none'
   },
   downloadIndividualResourceButton: {
     background: 'none',
     border: 0,
     color: 'dodgerblue',
     cursor: 'pointer',
-    textDecoration: 'underline',
+    textDecoration: 'underline'
   }
 }
 
@@ -154,11 +154,9 @@ function download(filename, blob) {
   const url = URL.createObjectURL(blob)
   const a = r('a', {
     href: url,
-    download: filename,
-    style: { display: 'none' }
+    download: filename
   })
   a.click()
-  a.remove()
   URL.revokeObjectURL(url)
 }
 
