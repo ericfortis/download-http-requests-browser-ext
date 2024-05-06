@@ -1,3 +1,5 @@
+const { TarWriter } = window.tarjs
+
 const r = upsertElement
 
 const mimes = {
@@ -29,6 +31,7 @@ function mimeFor(filename) {
 	throw `Missing MIME for ${filename}`
 }
 
+const files = new Map()
 
 const refList = useRef()
 
@@ -36,11 +39,20 @@ chrome.devtools.panels.create("HTTP Requests", '', "panel.html", panel => {
 	panel.onShown.addListener(win => {
 		win.document.body.append(
 			r('div', null,
+				r('a', {
+					download: 'requests.tar',
+					async onClick(event) {
+						const writer = new TarWriter()
+						for (const [filename, body] of files)
+							writer.addFile(filename, body)
+						const blob = await writer.write();
+						event.target.href = URL.createObjectURL(blob);
+					}
+				}, 'Download Tar'),
 				r('ul', { ref: refList })))
 	})
 })
 
-const files = new Map()
 
 chrome.devtools.network.onRequestFinished.addListener(request => {
 	const { url, method } = request.request
