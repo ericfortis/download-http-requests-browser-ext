@@ -50,19 +50,9 @@ function registerRequest(request) {
   const path = new URL(url).pathname
   const filename = `${path}.${method}.${status}${extForMime(content.mimeType)}`
   request.getContent((body, encoding) => {
-    let blob
-    if (encoding === 'base64') {
-      // https://stackoverflow.com/a/16245768
-      const byteCharacters = atob(body)
-      const byteNumbers = new Array(byteCharacters.length)
-      for (let i = 0; i < byteCharacters.length; i++)
-        byteNumbers[i] = byteCharacters.charCodeAt(i)
-      const byteArray = new Uint8Array(byteNumbers)
-      blob = new Blob([byteArray], { type: content.mimeType })
-    }
-    else
-      blob = body
-    files.set(filename, blob)
+    files.set(filename, encoding === 'base64'
+      ? blobFromBase64(content.mimeType, body)
+      : body)
   })
   renderFilenameOnList(filename)
 }
@@ -134,6 +124,16 @@ function urlHostname() {
         resolve(new URL(response).hostname)
     })
   })
+}
+
+// https://stackoverflow.com/a/16245768
+function blobFromBase64(mime, text) {
+  const byteCharacters = atob(text)
+  const byteNumbers = new Array(byteCharacters.length)
+  for (let i = 0; i < byteCharacters.length; i++)
+    byteNumbers[i] = byteCharacters.charCodeAt(i)
+  const byteArray = new Uint8Array(byteNumbers)
+  return new Blob([byteArray], { type: mime })
 }
 
 // https://stackoverflow.com/a/19328891
