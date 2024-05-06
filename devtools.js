@@ -60,9 +60,6 @@ async function makeTar() {
   return await writer.write()
 }
 
-const r = createElement
-const refReqList = useRef()
-
 function registerRequest(request) {
   const { url, method } = request.request
   const { status, content } = request.response
@@ -77,6 +74,9 @@ function registerRequest(request) {
   })
   renderFilenameOnList(filename)
 }
+
+const r = createElement
+const refReqList = useRef()
 
 function App() {
   return (
