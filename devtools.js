@@ -44,8 +44,8 @@ const Styles = {
 
 
 chrome.devtools.panels.create(Strings.panel_title, '', 'panel.html', panel => {
-  panel.onShown.addListener(async win =>
-    win.document.body.append(await App()))
+  panel.onShown.addListener(win =>
+    win.document.body.append(App()))
 })
 chrome.devtools.network.onRequestFinished.addListener(registerRequest)
 chrome.devtools.network.onNavigated.addListener(clearList)
@@ -78,7 +78,7 @@ function registerRequest(request) {
   renderFilenameOnList(filename)
 }
 
-async function App() {
+function App() {
   return (
     r('div', null,
       r('label', null, Strings.filter,
