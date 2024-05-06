@@ -23,7 +23,8 @@ const extensionsByMime = {
 }
 
 chrome.devtools.panels.create(Strings.panel_title, '', 'panel.html', panel => {
-	panel.onShown.addListener(win => App(win.document.body))
+	panel.onShown.addListener(async win =>
+		win.document.body.append(await App()))
 })
 chrome.devtools.network.onRequestFinished.addListener(registerRequest)
 chrome.devtools.network.onNavigated.addListener(clearList)
@@ -35,14 +36,14 @@ const r = createElement
 const refFilter = useRef()
 const refReqList = useRef()
 
-async function App(body) {
-	return body.append(
+async function App() {
+	return (
 		r('div', null,
 			r('label', null, Strings.filter,
 				r('input', {
 					ref: refReqList,
-					onChange: function filterFileList(event) {
-						filter = event.target.value
+					onChange: function filterFileList() {
+						filter = this.value
 						reRenderList()
 					}
 				})),
