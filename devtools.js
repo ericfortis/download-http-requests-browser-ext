@@ -21,21 +21,21 @@ const extensionsByMime = {
 	'video/mp4': 'mp4'
 }
 
-const files = new Map()
 
 chrome.devtools.panels.create(Strings.panel_title, '', 'panel.html', panel => {
 	panel.onShown.addListener(win => App(win.document.body))
 })
 chrome.devtools.network.onRequestFinished.addListener(registerRequest)
 
-const r = upsertElement
+const files = new Map()
+const r = createElement
 const refReqList = useRef()
 
 function App(body) {
 	return body.append(
 		r('div', null,
 			r('a', {
-				download: 'requests2.tar',
+				download: 'requests.tar',
 				onClick: async function donwloadTar() {
 					const writer = new TarWriter()
 					for (const [filename, body] of files)
@@ -44,11 +44,14 @@ function App(body) {
 					this.href = URL.createObjectURL(blob)
 				}
 			}, Strings.download_tar),
-			r('ul', { ref: refReqList })))
+			r('ul', {
+				ref: refReqList
+			})))
 }
 
 function renderFilenameOnList(filename) {
-	refReqList.current.appendChild(r('li', null, filename))
+	refReqList.current.appendChild(
+		r('li', null, filename))
 }
 
 function registerRequest(request) {
@@ -56,16 +59,16 @@ function registerRequest(request) {
 	const { status, content } = request.response
 	const path = new URL(url).pathname
 	const filename = `${path}.${method}.${status}${extForMime(content.mimeType)}`
-	request.getContent(body => files.set(filename, body))
+	request.getContent(body =>
+		files.set(filename, body))
 	renderFilenameOnList(filename)
 }
 
 
+// API similar to React.createElement
 // https://github.com/uxtely/js-utils/blob/main/react-create-element/createElement.js
-function upsertElement(elem, props, ...children) {
-	const node = elem instanceof HTMLElement
-		? elem
-		: document.createElement(elem)
+function createElement(elem, props, ...children) {
+	const node = document.createElement(elem)
 	if (props)
 		for (const [key, value] of Object.entries(props))
 			if (key === 'ref')
