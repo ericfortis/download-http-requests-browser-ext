@@ -29,8 +29,15 @@ chrome.devtools.panels.create(Strings.panel_title, '', 'panel.html', panel => {
 chrome.devtools.network.onRequestFinished.addListener(registerRequest)
 chrome.devtools.network.onNavigated.addListener(clearList)
 
-const files = new Map()
 let filter = ''
+const files = new Map()
+async function makeTar() {
+  const writer = new TarWriter()
+  for (const [filename, body] of files)
+    if (filename.includes(filter))
+      writer.addFile(filename, body)
+  return await writer.write()
+}
 
 const r = createElement
 const refReqList = useRef()
@@ -73,14 +80,6 @@ async function App() {
       r('ul', {
         ref: refReqList
       })))
-}
-
-async function makeTar() {
-  const writer = new TarWriter()
-  for (const [filename, body] of files)
-    if (filename.includes(filter))
-      writer.addFile(filename, body)
-  return await writer.write()
 }
 
 function renderFilenameOnList(filename) {
