@@ -36,6 +36,15 @@ const r = createElement
 const refFilter = useRef()
 const refReqList = useRef()
 
+function registerRequest(request) {
+	const { url, method } = request.request
+	const { status, content } = request.response
+	const path = new URL(url).pathname
+	const filename = `${path}.${method}.${status}${extForMime(content.mimeType)}`
+	request.getContent(body => files.set(filename, body))
+	renderFilenameOnList(filename)
+}
+
 async function App() {
 	return (
 		r('div', null,
@@ -92,16 +101,6 @@ function urlHostname() {
 				resolve(new URL(response).hostname)
 		})
 	})
-}
-
-function registerRequest(request) {
-	const { url, method } = request.request
-	const { status, content } = request.response
-	const path = new URL(url).pathname
-	const filename = `${path}.${method}.${status}${extForMime(content.mimeType)}`
-	request.getContent(body =>
-		files.set(filename, body))
-	renderFilenameOnList(filename)
 }
 
 
