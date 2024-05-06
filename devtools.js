@@ -1,8 +1,11 @@
 const { TarWriter } = window.tarjs
 
-const r = upsertElement
+const Strings = {
+	panel_title: 'HTTP Requests',
+	download_tar: 'Download Tar'
+}
 
-const mimes = {
+const extensionsByMime = {
 	'application/javascript': 'js',
 	'application/json': 'json',
 	'application/zip': 'zip',
@@ -18,41 +21,31 @@ const mimes = {
 	'video/mp4': 'mp4'
 }
 
-function extForMime(mime) {
-	const ext = mimes[mime]
-	return ext
-		? '.' + ext
-		: ''
-}
-function mimeFor(filename) {
-	const mime = mimes[filename.replace(/.*\./, '')]
-	if (mime)
-		return mime
-	throw `Missing MIME for ${filename}`
-}
-
 const files = new Map()
 
-const refList = useRef()
-
-chrome.devtools.panels.create("HTTP Requests", '', "panel.html", panel => {
-	panel.onShown.addListener(win => {
-		win.document.body.append(
-			r('div', null,
-				r('a', {
-					download: 'requests.tar',
-					async onClick(event) {
-						const writer = new TarWriter()
-						for (const [filename, body] of files)
-							writer.addFile(filename, body)
-						const blob = await writer.write();
-						event.target.href = URL.createObjectURL(blob);
-					}
-				}, 'Download Tar'),
-				r('ul', { ref: refList })))
-	})
+chrome.devtools.panels.create(Strings.panel_title, '', 'panel.html', panel => {
+	panel.onShown.addListener(win => App(win.document.body))
 })
 
+const r = upsertElement
+const refReqList = useRef()
+
+function App(body) {
+	return body.append(
+		r('div', null,
+			r('a', {
+				href: undefined,
+				download: 'requests.tar',
+				onClick: async function donwloadTar() {
+					const writer = new TarWriter()
+					for (const [filename, body] of files)
+						writer.addFile(filename, body)
+					const blob = await writer.write()
+					this.href = URL.createObjectURL(blob)
+				}
+			}, Strings.download_tar),
+			r('ul', { ref: refReqList })))
+}
 
 chrome.devtools.network.onRequestFinished.addListener(request => {
 	const { url, method } = request.request
@@ -60,7 +53,7 @@ chrome.devtools.network.onRequestFinished.addListener(request => {
 	const path = new URL(url).pathname
 	const filename = `${path}.${method}.${status}${extForMime(content.mimeType)}`
 	request.getContent(body => files.set(filename, body))
-	refList.current.appendChild(r('li', null, filename))
+	refReqList.current.appendChild(r('li', null, filename))
 })
 
 
@@ -88,3 +81,11 @@ function upsertElement(elem, props, ...children) {
 function useRef() {
 	return { current: null }
 }
+
+function extForMime(mime) {
+	const ext = extensionsByMime[mime]
+	return ext
+		? '.' + ext
+		: ''
+}
+
