@@ -26,6 +26,7 @@ const files = new Map()
 chrome.devtools.panels.create(Strings.panel_title, '', 'panel.html', panel => {
 	panel.onShown.addListener(win => App(win.document.body))
 })
+chrome.devtools.network.onRequestFinished.addListener(registerRequest)
 
 const r = upsertElement
 const refReqList = useRef()
@@ -34,8 +35,7 @@ function App(body) {
 	return body.append(
 		r('div', null,
 			r('a', {
-				href: undefined,
-				download: 'requests.tar',
+				download: 'requests2.tar',
 				onClick: async function donwloadTar() {
 					const writer = new TarWriter()
 					for (const [filename, body] of files)
@@ -47,14 +47,18 @@ function App(body) {
 			r('ul', { ref: refReqList })))
 }
 
-chrome.devtools.network.onRequestFinished.addListener(request => {
+function renderFilenameOnList(filename) {
+	refReqList.current.appendChild(r('li', null, filename))
+}
+
+function registerRequest(request) {
 	const { url, method } = request.request
 	const { status, content } = request.response
 	const path = new URL(url).pathname
 	const filename = `${path}.${method}.${status}${extForMime(content.mimeType)}`
 	request.getContent(body => files.set(filename, body))
-	refReqList.current.appendChild(r('li', null, filename))
-})
+	renderFilenameOnList(filename)
+}
 
 
 // https://github.com/uxtely/js-utils/blob/main/react-create-element/createElement.js
