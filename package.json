@@ -1,5 +1,7 @@
 {
   "type": "module",
+  "author": "Eric Fortis",
+  "license": "ISC",
   "dependencies": {
     "@gera2ld/tarjs": "0.3.1"
   }
