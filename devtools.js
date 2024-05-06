@@ -51,17 +51,20 @@ async function App() {
 				href: '',
 				download: (await urlHostname() || 'requests') + '.tar',
 				onClick: async function downloadTar() {
-					const writer = new TarWriter()
-					for (const [filename, body] of files)
-						if (filename.includes(filter))
-							writer.addFile(filename, body)
-					const blob = await writer.write()
-					this.href = URL.createObjectURL(blob)
+					this.href = URL.createObjectURL(await makeTar())
 				}
 			}, Strings.download_tar),
 			r('ul', {
 				ref: refReqList
 			})))
+}
+
+async function makeTar() {
+	const writer = new TarWriter()
+	for (const [filename, body] of files)
+		if (filename.includes(filter))
+			writer.addFile(filename, body)
+	return await writer.write()
 }
 
 function renderFilenameOnList(filename) {
