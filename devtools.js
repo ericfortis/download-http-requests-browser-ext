@@ -26,28 +26,29 @@ const Styles = {
   }
 }
 
-const extensionsByMime = {
-  'application/javascript': 'js',
-  'application/json': 'json',
-  'application/zip': 'zip',
-  'image/avif': 'avif',
-  'image/jpg': 'jpg',
-  'image/png': 'png',
-  'image/svg+xml': 'svg',
-  'image/webp': 'webp',
-  'image/x-icon': 'ico',
-  'text/css': 'css',
-  'text/html': 'html',
-  'text/plain': 'txt',
-  'video/mp4': 'mp4'
+const Mime = {
+  _extensionsByMime: {
+    'application/javascript': 'js',
+    'application/json': 'json',
+    'application/zip': 'zip',
+    'image/avif': 'avif',
+    'image/jpg': 'jpg',
+    'image/png': 'png',
+    'image/svg+xml': 'svg',
+    'image/webp': 'webp',
+    'image/x-icon': 'ico',
+    'text/css': 'css',
+    'text/html': 'html',
+    'text/plain': 'txt',
+    'video/mp4': 'mp4'
+  },
+  extensionFor(mime) {
+    const ext = this._extensionsByMime[mime]
+    return ext
+      ? '.' + ext
+      : ''
+  }
 }
-
-chrome.devtools.panels.create(Strings.panel_title, '', 'panel.html', panel => {
-  panel.onShown.addListener(win =>
-    win.document.body.append(App()))
-})
-chrome.devtools.network.onRequestFinished.addListener(registerRequest)
-chrome.devtools.network.onNavigated.addListener(clearList)
 
 const Files = {
   _filter: '',
@@ -77,7 +78,7 @@ const Files = {
         writer.addFile(filename, body)
     return await writer.write()
   },
-  
+
   // https://stackoverflow.com/a/16245768
   _blobFromBase64(mime, text) {
     const byteCharacters = atob(text)
@@ -89,13 +90,22 @@ const Files = {
   }
 }
 
+
+chrome.devtools.panels.create(Strings.panel_title, '', 'panel.html', panel => {
+  panel.onShown.addListener(win =>
+    win.document.body.append(App()))
+})
+chrome.devtools.network.onRequestFinished.addListener(registerRequest)
+chrome.devtools.network.onNavigated.addListener(clearList)
+
+
 function registerRequest(request) {
   const { url, method } = request.request
   const { status, content } = request.response
   if (status !== 200) // Partial Content (e.g. videos) or 304's (cached)
     return
   const path = new URL(url).pathname
-  const filename = `${path}.${method}.${status}${extForMime(content.mimeType)}`
+  const filename = `${path}.${method}.${status}${Mime.extensionFor(content.mimeType)}`
   request.getContent((body, encoding) =>
     Files.insert(body, encoding, filename, content.mimeType))
   renderFilenameOnList(filename) // TODO handle duplicates
@@ -199,12 +209,5 @@ function createElement(elem, props, ...children) {
 
 function useRef() {
   return { current: null }
-}
-
-function extForMime(mime) {
-  const ext = extensionsByMime[mime]
-  return ext
-    ? '.' + ext
-    : ''
 }
 
