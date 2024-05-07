@@ -64,7 +64,7 @@ const Files = {
     return this._files.get(filename)
   },
   listFiltered() {
-    return Array.from(this._files.keys()).filter(f => this.filter(f))
+    return this._files.keys().filter(f => this.filter(f))
   },
   insert(body, encoding, filename, mime) {
     this._files.set(filename, encoding === 'base64'
