@@ -93,11 +93,10 @@ const files = new class {
 
 
 chrome.devtools.panels.create(Strings.panel_title, '', 'panel.html', panel => {
-  function initOnce(win) {
-    win.document.body.append(App())
+  panel.onShown.addListener(function initOnce(win) {
     panel.onShown.removeListener(initOnce)
-  }
-  panel.onShown.addListener(initOnce)
+    win.document.body.append(App())
+  })
 })
 chrome.devtools.network.onRequestFinished.addListener(registerRequest)
 chrome.devtools.network.onNavigated.addListener(clearList)
