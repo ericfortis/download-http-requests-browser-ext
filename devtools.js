@@ -26,7 +26,7 @@ const Styles = {
   }
 }
 
-const Mime = new class {
+const mime = new class {
   #extensionsByMime = {
     'application/javascript': 'js',
     'application/json': 'json',
@@ -42,15 +42,15 @@ const Mime = new class {
     'text/plain': 'txt',
     'video/mp4': 'mp4'
   }
-  extensionFor(mime) {
-    const ext = this.#extensionsByMime[mime]
+  extensionFor(mimeType) {
+    const ext = this.#extensionsByMime[mimeType]
     return ext
       ? '.' + ext
       : ''
   }
 }
 
-const Files = new class {
+const files = new class {
   #filterString = ''
   #filter(filename) {
     return filename.includes(this.#filterString)
@@ -66,9 +66,9 @@ const Files = new class {
   listFiltered() {
     return this.#files.keys().filter(f => this.#filter(f))
   }
-  insert(body, encoding, filename, mime) {
+  insert(body, encoding, filename, mimeType) {
     this.#files.set(filename, encoding === 'base64'
-      ? this.#blobFromBase64(mime, body)
+      ? this.#blobFromBase64(mimeType, body)
       : body)
   }
   async tar() {
@@ -80,13 +80,13 @@ const Files = new class {
   }
 
   // https://stackoverflow.com/a/16245768
-  #blobFromBase64(mime, text) {
+  #blobFromBase64(mimeType, text) {
     const byteCharacters = atob(text)
     const byteNumbers = new Array(byteCharacters.length)
     for (let i = 0; i < byteCharacters.length; i++)
       byteNumbers[i] = byteCharacters.charCodeAt(i)
     const byteArray = new Uint8Array(byteNumbers)
-    return new Blob([byteArray], { type: mime })
+    return new Blob([byteArray], { type: mimeType })
   }
 }
 
@@ -105,9 +105,9 @@ function registerRequest(request) {
   if (status !== 200) // Partial Content (e.g. videos) or 304's (cached)
     return
   const path = new URL(url).pathname
-  const filename = `${path}.${method}.${status}${Mime.extensionFor(content.mimeType)}`
+  const filename = `${path}.${method}.${status}${mime.extensionFor(content.mimeType)}`
   request.getContent((body, encoding) =>
-    Files.insert(body, encoding, filename, content.mimeType))
+    files.insert(body, encoding, filename, content.mimeType))
   renderList() // flushing it to avoid duplicate request entries
 }
 
@@ -120,7 +120,7 @@ function App() {
       r('label', null, Strings.filter,
         r('input', {
           onKeyUp: function filterFileList() {
-            Files.setFilter(this.value)
+            files.setFilter(this.value)
             renderList()
           }
         })),
@@ -129,7 +129,7 @@ function App() {
         style: Styles.downloadTarButton,
         async onClick() {
           const filename = (await urlHostname() || 'requests') + '.tar'
-          download(filename, await Files.tar())
+          download(filename, await files.tar())
         }
       }, Strings.download_tar),
       r('ul', {
@@ -143,13 +143,13 @@ function renderList() {
     return
 
   clearList()
-  for (const filename of Files.listFiltered())
+  for (const filename of files.listFiltered())
     refReqList.current.appendChild(
       r('li', null,
         r('button', {
           type: 'button',
           style: Styles.downloadIndividualResourceButton,
-          onClick() { download(filename, Files.read(filename)) }
+          onClick() { download(filename, files.read(filename)) }
         }, filename)))
 }
 
