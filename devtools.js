@@ -63,8 +63,8 @@ const Files = {
   read(filename) {
     return this._files.get(filename)
   },
-  list() {
-    return Array.from(this._files.keys())
+  listFiltered() {
+    return Array.from(this._files.keys()).filter(f => this.filter(f))
   },
   insert(body, encoding, filename, mime) {
     this._files.set(filename, encoding === 'base64'
@@ -141,22 +141,16 @@ function App() {
 function renderList() {
   if (!refReqList.current)
     return
+  
   clearList()
-  Files.list()
-    .filter(f => Files.filter(f))
-    .forEach(renderFilenameOnList)
-}
-
-function renderFilenameOnList(filename) {
-  refReqList.current.appendChild(
-    r('li', null,
-      r('button', {
-        type: 'button',
-        style: Styles.downloadIndividualResourceButton,
-        onClick() {
-          download(filename, Files.read(filename))
-        }
-      }, filename)))
+  for (const filename of Files.listFiltered())
+    refReqList.current.appendChild(
+      r('li', null,
+        r('button', {
+          type: 'button',
+          style: Styles.downloadIndividualResourceButton,
+          onClick() { download(filename, Files.read(filename)) }
+        }, filename)))
 }
 
 function clearList() {
