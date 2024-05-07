@@ -84,10 +84,10 @@ const files = new class {
   // https://stackoverflow.com/a/16245768
   #base64ToByteArray(text) {
     const byteCharacters = atob(text)
-    const byteNumbers = new Array(byteCharacters.length)
+    const bytes = new Uint8Array(byteCharacters.length)
     for (let i = 0; i < byteCharacters.length; i++)
-      byteNumbers[i] = byteCharacters.charCodeAt(i)
-    return new Uint8Array(byteNumbers)
+      bytes[i] = byteCharacters.charCodeAt(i)
+    return bytes
   }
 }
 
