@@ -68,7 +68,7 @@ const Files = new class {
   }
   insert(body, encoding, filename, mime) {
     this.#files.set(filename, encoding === 'base64'
-      ? this._blobFromBase64(mime, body)
+      ? this.#blobFromBase64(mime, body)
       : body)
   }
   async tar() {
@@ -80,7 +80,7 @@ const Files = new class {
   }
 
   // https://stackoverflow.com/a/16245768
-  _blobFromBase64(mime, text) {
+  #blobFromBase64(mime, text) {
     const byteCharacters = atob(text)
     const byteNumbers = new Array(byteCharacters.length)
     for (let i = 0; i < byteCharacters.length; i++)
