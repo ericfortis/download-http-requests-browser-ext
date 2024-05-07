@@ -64,7 +64,7 @@ const Files = {
     return this._files.get(filename)
   },
   list() {
-    return this._files.keys()
+    return Array.from(this._files.keys())
   },
   insert(body, encoding, filename, mime) {
     this._files.set(filename, encoding === 'base64'
@@ -108,7 +108,7 @@ function registerRequest(request) {
   const filename = `${path}.${method}.${status}${Mime.extensionFor(content.mimeType)}`
   request.getContent((body, encoding) =>
     Files.insert(body, encoding, filename, content.mimeType))
-  reRenderList() // flushing it to avoid duplicate request entries
+  renderList() // flushing it to avoid duplicate request entries
 }
 
 const r = createElement
@@ -121,7 +121,7 @@ function App() {
         r('input', {
           onKeyUp: function filterFileList() {
             Files.setFilter(this.value)
-            reRenderList()
+            renderList()
           }
         })),
       r('button', {
@@ -137,8 +137,16 @@ function App() {
       })))
 }
 
+
+function renderList() {
+  clearList()
+  Files.list()
+    .filter(f => Files.filter(f))
+    .forEach(renderFilenameOnList)
+}
+
 function renderFilenameOnList(filename) {
-  if (refReqList.current && Files.filter(filename))
+  if (refReqList.current)
     refReqList.current.appendChild(
       r('li', null,
         r('button', {
@@ -148,11 +156,6 @@ function renderFilenameOnList(filename) {
             download(filename, Files.read(filename))
           }
         }, filename)))
-}
-
-function reRenderList() {
-  clearList()
-  Files.list().forEach(renderFilenameOnList)
 }
 
 function clearList() {
