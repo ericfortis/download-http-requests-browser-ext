@@ -26,8 +26,8 @@ const Styles = {
   }
 }
 
-const Mime = {
-  _extensionsByMime: {
+const Mime = new class {
+  #extensionsByMime = {
     'application/javascript': 'js',
     'application/json': 'json',
     'application/zip': 'zip',
@@ -41,43 +41,43 @@ const Mime = {
     'text/html': 'html',
     'text/plain': 'txt',
     'video/mp4': 'mp4'
-  },
+  }
   extensionFor(mime) {
-    const ext = this._extensionsByMime[mime]
+    const ext = this.#extensionsByMime[mime]
     return ext
       ? '.' + ext
       : ''
   }
 }
 
-const Files = {
-  _filterString: '',
-  _filter(filename) {
-    return filename.includes(this._filterString)
-  },
+const Files = new class {
+  #filterString = ''
+  #filter(filename) {
+    return filename.includes(this.#filterString)
+  }
   setFilter(filterText) {
-    this._filterString = filterText
-  },
+    this.#filterString = filterText
+  }
 
-  _files: new Map(),
+  #files = new Map()
   read(filename) {
-    return this._files.get(filename)
-  },
+    return this.#files.get(filename)
+  }
   listFiltered() {
-    return this._files.keys().filter(f => this._filter(f))
-  },
+    return this.#files.keys().filter(f => this.#filter(f))
+  }
   insert(body, encoding, filename, mime) {
-    this._files.set(filename, encoding === 'base64'
+    this.#files.set(filename, encoding === 'base64'
       ? this._blobFromBase64(mime, body)
       : body)
-  },
+  }
   async tar() {
     const writer = new TarWriter()
-    for (const [filename, body] of this._files)
-      if (this._filter(filename))
+    for (const [filename, body] of this.#files)
+      if (this.#filter(filename))
         writer.addFile(filename, body)
     return await writer.write()
-  },
+  }
 
   // https://stackoverflow.com/a/16245768
   _blobFromBase64(mime, text) {
