@@ -50,19 +50,21 @@ chrome.devtools.network.onRequestFinished.addListener(registerRequest)
 chrome.devtools.network.onNavigated.addListener(clearList)
 
 const Files = {
-  filter: '',
+  _filter: '',
+  filter: filename => filename.includes(this._filter),
+  
   files: new Map(),
 
-  addFile(body, encoding, filename, mime) {
+  insert(body, encoding, filename, mime) {
     this.files.set(filename, encoding === 'base64'
       ? blobFromBase64(mime, body)
       : body)
   },
 
-  async makeTar() {
+  async tar() {
     const writer = new TarWriter()
     for (const [filename, body] of this.files)
-      if (filename.includes(this.filter))
+      if (this.filter(filename))
         writer.addFile(filename, body)
     return await writer.write()
   }
@@ -75,7 +77,7 @@ function registerRequest(request) {
     return
   const path = new URL(url).pathname
   const filename = `${path}.${method}.${status}${extForMime(content.mimeType)}`
-  request.getContent((body, encoding) => Files.addFile(body, encoding, filename, content.mimeType))
+  request.getContent((body, encoding) => Files.insert(body, encoding, filename, content.mimeType))
   renderFilenameOnList(filename)
 }
 
@@ -88,7 +90,7 @@ function App() {
       r('label', null, Strings.filter,
         r('input', {
           onKeyUp: function filterFileList() {
-            Files.filter = this.value
+            Files._filter = this.value
             reRenderList()
           }
         })),
@@ -97,7 +99,7 @@ function App() {
         style: Styles.downloadTarButton,
         async onClick() {
           const filename = (await urlHostname() || 'requests') + '.tar'
-          download(filename, await Files.makeTar())
+          download(filename, await Files.tar())
         }
       }, Strings.download_tar),
       r('ul', {
@@ -106,7 +108,7 @@ function App() {
 }
 
 function renderFilenameOnList(filename) {
-  if (refReqList.current && filename.includes(Files.filter))
+  if (refReqList.current && filename.includes(Files._filter))
     refReqList.current.appendChild(
       r('li', null,
         r('button', {
