@@ -51,12 +51,12 @@ const Mime = {
 }
 
 const Files = {
-  _filter: '',
-  setFilter(filterText) {
-    this._filter = filterText
+  _filterString: '',
+  _filter(filename) {
+    return filename.includes(this._filterString)
   },
-  filter(filename) {
-    return filename.includes(this._filter)
+  setFilter(filterText) {
+    this._filterString = filterText
   },
 
   _files: new Map(),
@@ -64,7 +64,7 @@ const Files = {
     return this._files.get(filename)
   },
   listFiltered() {
-    return this._files.keys().filter(f => this.filter(f))
+    return this._files.keys().filter(f => this._filter(f))
   },
   insert(body, encoding, filename, mime) {
     this._files.set(filename, encoding === 'base64'
@@ -74,7 +74,7 @@ const Files = {
   async tar() {
     const writer = new TarWriter()
     for (const [filename, body] of this._files)
-      if (this.filter(filename))
+      if (this._filter(filename))
         writer.addFile(filename, body)
     return await writer.write()
   },
@@ -141,7 +141,7 @@ function App() {
 function renderList() {
   if (!refReqList.current)
     return
-  
+
   clearList()
   for (const filename of Files.listFiltered())
     refReqList.current.appendChild(
