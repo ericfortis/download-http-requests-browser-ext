@@ -67,9 +67,10 @@ const files = new class {
     return this.#files.keys().filter(f => this.#filter(f))
   }
   insert(body, encoding, filename, mimeType) {
-    this.#files.set(filename, encoding === 'base64'
-      ? this.#blobFromBase64(mimeType, body)
-      : new Blob([body], { type: mimeType }))
+    const data = encoding === 'base64'
+      ? this.#base64ToByteArray(body)
+      : body
+    this.#files.set(filename, new Blob([data], { type: mimeType }))
   }
   async tar() {
     const writer = new TarWriter()
@@ -80,13 +81,12 @@ const files = new class {
   }
 
   // https://stackoverflow.com/a/16245768
-  #blobFromBase64(mimeType, text) {
+  #base64ToByteArray(text) {
     const byteCharacters = atob(text)
     const byteNumbers = new Array(byteCharacters.length)
     for (let i = 0; i < byteCharacters.length; i++)
       byteNumbers[i] = byteCharacters.charCodeAt(i)
-    const byteArray = new Uint8Array(byteNumbers)
-    return new Blob([byteArray], { type: mimeType })
+    return new Uint8Array(byteNumbers)
   }
 }
 
