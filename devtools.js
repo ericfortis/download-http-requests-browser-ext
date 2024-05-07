@@ -72,6 +72,7 @@ const files = new class {
       : body
     this.#files.set(filename, new Blob([data], { type: mimeType }))
   }
+
   async tar() {
     const writer = new TarWriter()
     for (const [filename, body] of this.#files)
@@ -92,8 +93,11 @@ const files = new class {
 
 
 chrome.devtools.panels.create(Strings.panel_title, '', 'panel.html', panel => {
-  panel.onShown.addListener(win =>
-    win.document.body.append(App()))
+  function onShow(win) {
+    win.document.body.append(App())
+    panel.onShown.removeListener(onShow)
+  }
+  panel.onShown.addListener(onShow)
 })
 chrome.devtools.network.onRequestFinished.addListener(registerRequest)
 chrome.devtools.network.onNavigated.addListener(clearList)
@@ -172,7 +176,6 @@ function urlHostname() {
     })
   })
 }
-
 
 // https://stackoverflow.com/a/19328891
 function download(filename, blob) {
