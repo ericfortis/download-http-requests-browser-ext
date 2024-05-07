@@ -139,7 +139,7 @@ function App() {
 
 
 function renderList() {
-  if (refReqList.current)
+  if (!refReqList.current)
     return
   clearList()
   Files.list()
