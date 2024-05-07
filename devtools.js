@@ -69,7 +69,7 @@ const files = new class {
   insert(body, encoding, filename, mimeType) {
     this.#files.set(filename, encoding === 'base64'
       ? this.#blobFromBase64(mimeType, body)
-      : body)
+      : new Blob([body], { type: mimeType }))
   }
   async tar() {
     const writer = new TarWriter()
