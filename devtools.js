@@ -51,9 +51,17 @@ chrome.devtools.network.onNavigated.addListener(clearList)
 
 const Files = {
   _filter: '',
-  filter(filename) { return filename.includes(this._filter) },
-  
+  setFilter(filterText) {
+    this._filter = filterText
+  },
+  filter(filename) {
+    return filename.includes(this._filter)
+  },
+
   files: new Map(),
+  read(filename) {
+    return this.files.get(filename)
+  },
 
   insert(body, encoding, filename, mime) {
     this.files.set(filename, encoding === 'base64'
@@ -77,7 +85,8 @@ function registerRequest(request) {
     return
   const path = new URL(url).pathname
   const filename = `${path}.${method}.${status}${extForMime(content.mimeType)}`
-  request.getContent((body, encoding) => Files.insert(body, encoding, filename, content.mimeType))
+  request.getContent((body, encoding) =>
+    Files.insert(body, encoding, filename, content.mimeType))
   renderFilenameOnList(filename)
 }
 
@@ -90,7 +99,7 @@ function App() {
       r('label', null, Strings.filter,
         r('input', {
           onKeyUp: function filterFileList() {
-            Files._filter = this.value
+            Files.setFilter(this.value)
             reRenderList()
           }
         })),
@@ -115,7 +124,7 @@ function renderFilenameOnList(filename) {
           type: 'button',
           style: Styles.downloadIndividualResourceButton,
           onClick() {
-            download(filename, Files.files.get(filename))
+            download(filename, Files.read(filename))
           }
         }, filename)))
 }
