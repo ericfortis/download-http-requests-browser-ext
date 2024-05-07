@@ -42,7 +42,6 @@ const extensionsByMime = {
   'video/mp4': 'mp4'
 }
 
-
 chrome.devtools.panels.create(Strings.panel_title, '', 'panel.html', panel => {
   panel.onShown.addListener(win =>
     win.document.body.append(App()))
@@ -50,14 +49,16 @@ chrome.devtools.panels.create(Strings.panel_title, '', 'panel.html', panel => {
 chrome.devtools.network.onRequestFinished.addListener(registerRequest)
 chrome.devtools.network.onNavigated.addListener(clearList)
 
-let filter = ''
-const files = new Map()
-async function makeTar() {
-  const writer = new TarWriter()
-  for (const [filename, body] of files)
-    if (filename.includes(filter))
-      writer.addFile(filename, body)
-  return await writer.write()
+const Files = {
+  filter: '',
+  files: new Map(),
+  async makeTar() {
+    const writer = new TarWriter()
+    for (const [filename, body] of this.files)
+      if (filename.includes(this.filter))
+        writer.addFile(filename, body)
+    return await writer.write()
+  }
 }
 
 function registerRequest(request) {
@@ -68,7 +69,7 @@ function registerRequest(request) {
   const path = new URL(url).pathname
   const filename = `${path}.${method}.${status}${extForMime(content.mimeType)}`
   request.getContent((body, encoding) => {
-    files.set(filename, encoding === 'base64'
+    Files.files.set(filename, encoding === 'base64'
       ? blobFromBase64(content.mimeType, body)
       : body)
   })
@@ -84,7 +85,7 @@ function App() {
       r('label', null, Strings.filter,
         r('input', {
           onKeyUp: function filterFileList() {
-            filter = this.value
+            Files.filter = this.value
             reRenderList()
           }
         })),
@@ -93,7 +94,7 @@ function App() {
         style: Styles.downloadTarButton,
         async onClick() {
           const filename = (await urlHostname() || 'requests') + '.tar'
-          download(filename, await makeTar())
+          download(filename, await Files.makeTar())
         }
       }, Strings.download_tar),
       r('ul', {
@@ -102,21 +103,21 @@ function App() {
 }
 
 function renderFilenameOnList(filename) {
-  if (refReqList.current && filename.includes(filter))
+  if (refReqList.current && filename.includes(Files.filter))
     refReqList.current.appendChild(
       r('li', null,
         r('button', {
           type: 'button',
           style: Styles.downloadIndividualResourceButton,
           onClick() {
-            download(filename, files.get(filename))
+            download(filename, Files.files.get(filename))
           }
         }, filename)))
 }
 
 function reRenderList() {
   clearList()
-  for (const [filename, body] of files)
+  for (const [filename, body] of Files.files)
     renderFilenameOnList(filename)
 }
 

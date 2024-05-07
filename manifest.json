@@ -1,5 +1,5 @@
 {
-  "name": "save-requests-ext",
+  "name": "devtools-ext-tar-http-requests",
   "description": "Extension for downloading a tar with the HTTP requests",
   "manifest_version": 3,
   "version": "1.0",
