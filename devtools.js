@@ -67,7 +67,7 @@ const Files = {
   },
   insert(body, encoding, filename, mime) {
     this._files.set(filename, encoding === 'base64'
-      ? blobFromBase64(mime, body)
+      ? this._blobFromBase64(mime, body)
       : body)
   },
   async tar() {
@@ -76,6 +76,16 @@ const Files = {
       if (this.filter(filename))
         writer.addFile(filename, body)
     return await writer.write()
+  },
+  
+  // https://stackoverflow.com/a/16245768
+  _blobFromBase64(mime, text) {
+    const byteCharacters = atob(text)
+    const byteNumbers = new Array(byteCharacters.length)
+    for (let i = 0; i < byteCharacters.length; i++)
+      byteNumbers[i] = byteCharacters.charCodeAt(i)
+    const byteArray = new Uint8Array(byteNumbers)
+    return new Blob([byteArray], { type: mime })
   }
 }
 
@@ -155,15 +165,6 @@ function urlHostname() {
   })
 }
 
-// https://stackoverflow.com/a/16245768
-function blobFromBase64(mime, text) {
-  const byteCharacters = atob(text)
-  const byteNumbers = new Array(byteCharacters.length)
-  for (let i = 0; i < byteCharacters.length; i++)
-    byteNumbers[i] = byteCharacters.charCodeAt(i)
-  const byteArray = new Uint8Array(byteNumbers)
-  return new Blob([byteArray], { type: mime })
-}
 
 // https://stackoverflow.com/a/19328891
 function download(filename, blob) {
