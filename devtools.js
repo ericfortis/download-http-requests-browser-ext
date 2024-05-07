@@ -108,7 +108,7 @@ function registerRequest(request) {
   const filename = `${path}.${method}.${status}${Mime.extensionFor(content.mimeType)}`
   request.getContent((body, encoding) =>
     Files.insert(body, encoding, filename, content.mimeType))
-  renderFilenameOnList(filename) // TODO handle duplicates
+  reRenderList() // flushing it to avoid duplicate request entries
 }
 
 const r = createElement
