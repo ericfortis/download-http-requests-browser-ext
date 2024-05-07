@@ -52,6 +52,13 @@ chrome.devtools.network.onNavigated.addListener(clearList)
 const Files = {
   filter: '',
   files: new Map(),
+
+  addFile(body, encoding, filename, mime) {
+    this.files.set(filename, encoding === 'base64'
+      ? blobFromBase64(mime, body)
+      : body)
+  },
+
   async makeTar() {
     const writer = new TarWriter()
     for (const [filename, body] of this.files)
@@ -68,11 +75,7 @@ function registerRequest(request) {
     return
   const path = new URL(url).pathname
   const filename = `${path}.${method}.${status}${extForMime(content.mimeType)}`
-  request.getContent((body, encoding) => {
-    Files.files.set(filename, encoding === 'base64'
-      ? blobFromBase64(content.mimeType, body)
-      : body)
-  })
+  request.getContent((body, encoding) => Files.addFile(body, encoding, filename, content.mimeType))
   renderFilenameOnList(filename)
 }
 
