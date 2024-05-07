@@ -58,20 +58,21 @@ const Files = {
     return filename.includes(this._filter)
   },
 
-  files: new Map(),
+  _files: new Map(),
   read(filename) {
-    return this.files.get(filename)
+    return this._files.get(filename)
   },
-
+  list() {
+    return this._files.keys()
+  },
   insert(body, encoding, filename, mime) {
-    this.files.set(filename, encoding === 'base64'
+    this._files.set(filename, encoding === 'base64'
       ? blobFromBase64(mime, body)
       : body)
   },
-
   async tar() {
     const writer = new TarWriter()
-    for (const [filename, body] of this.files)
+    for (const [filename, body] of this._files)
       if (this.filter(filename))
         writer.addFile(filename, body)
     return await writer.write()
@@ -87,7 +88,7 @@ function registerRequest(request) {
   const filename = `${path}.${method}.${status}${extForMime(content.mimeType)}`
   request.getContent((body, encoding) =>
     Files.insert(body, encoding, filename, content.mimeType))
-  renderFilenameOnList(filename)
+  renderFilenameOnList(filename) // TODO handle duplicates
 }
 
 const r = createElement
@@ -131,8 +132,7 @@ function renderFilenameOnList(filename) {
 
 function reRenderList() {
   clearList()
-  for (const [filename, body] of Files.files)
-    renderFilenameOnList(filename)
+  Files.list().forEach(renderFilenameOnList)
 }
 
 function clearList() {
