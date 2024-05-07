@@ -51,7 +51,7 @@ chrome.devtools.network.onNavigated.addListener(clearList)
 
 const Files = {
   _filter: '',
-  filter: filename => filename.includes(this._filter),
+  filter(filename) { return filename.includes(this._filter) },
   
   files: new Map(),
 
@@ -108,7 +108,7 @@ function App() {
 }
 
 function renderFilenameOnList(filename) {
-  if (refReqList.current && filename.includes(Files._filter))
+  if (refReqList.current && Files.filter(filename))
     refReqList.current.appendChild(
       r('li', null,
         r('button', {
