@@ -139,6 +139,8 @@ function App() {
 
 
 function renderList() {
+  if (refReqList.current)
+    return
   clearList()
   Files.list()
     .filter(f => Files.filter(f))
@@ -146,16 +148,15 @@ function renderList() {
 }
 
 function renderFilenameOnList(filename) {
-  if (refReqList.current)
-    refReqList.current.appendChild(
-      r('li', null,
-        r('button', {
-          type: 'button',
-          style: Styles.downloadIndividualResourceButton,
-          onClick() {
-            download(filename, Files.read(filename))
-          }
-        }, filename)))
+  refReqList.current.appendChild(
+    r('li', null,
+      r('button', {
+        type: 'button',
+        style: Styles.downloadIndividualResourceButton,
+        onClick() {
+          download(filename, Files.read(filename))
+        }
+      }, filename)))
 }
 
 function clearList() {
