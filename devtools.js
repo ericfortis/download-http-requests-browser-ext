@@ -39,8 +39,7 @@ const mime = new class {
     'image/x-icon': 'ico',
     'text/css': 'css',
     'text/html': 'html',
-    'text/plain': 'txt',
-    'video/mp4': 'mp4'
+    'text/plain': 'txt'
   }
   extensionFor(mimeType) {
     const ext = this.#extensionsByMime[mimeType]
@@ -73,12 +72,13 @@ const files = new class {
     this.#files.set(filename, new Blob([data], { type: mimeType }))
   }
 
-  async tar() {
+  /** @returns Promise */
+  tar() {
     const writer = new TarWriter()
     for (const [filename, body] of this.#files)
       if (this.#filter(filename))
         writer.addFile(filename, body)
-    return await writer.write()
+    return writer.write()
   }
 
   // https://stackoverflow.com/a/16245768
