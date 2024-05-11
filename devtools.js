@@ -7,24 +7,11 @@ const Strings = {
   replace_ids: 'Replace GUIDs with placeholder'
 }
 
-const Styles = {
-  downloadTarButton: {
-    background: 'dodgerblue',
-    border: 0,
-    borderRadius: '6px',
-    color: 'white',
-    cursor: 'pointer',
-    marginLeft: '12px',
-    padding: '10px',
-    textDecoration: 'none'
-  },
-  downloadIndividualResourceButton: {
-    background: 'none',
-    border: 0,
-    color: 'dodgerblue',
-    cursor: 'pointer',
-    textDecoration: 'underline'
-  }
+const CSS = {
+  Filter: 'Filter',
+  Checkbox: 'Checkbox',
+  DownloadTar: 'DownloadTar',
+  FileList: 'FileList'
 }
 
 const mime = new class {
@@ -134,14 +121,14 @@ const refReqList = useRef()
 function App() {
   return (
     r('div', null,
-      r('label', null, Strings.filter,
+      r('label', { className: CSS.Filter }, Strings.filter,
         r('input', {
           onKeyUp: function filterFileList() {
             files.setFilter(this.value)
             renderList()
           }
         })),
-      r('label', null,
+      r('label', { className: CSS.Checkbox },
         r('input', {
           type: 'checkbox',
           onChange() {
@@ -152,14 +139,15 @@ function App() {
         Strings.replace_ids),
       r('button', {
         type: 'button',
-        style: Styles.downloadTarButton,
+        className: CSS.DownloadTar,
         async onClick() {
           const filename = (await urlHostname() || 'requests') + '.tar'
           download(filename, await files.tar())
         }
       }, Strings.download_tar),
       r('ul', {
-        ref: refReqList
+        ref: refReqList,
+        className: CSS.FileList
       })))
 }
 
@@ -174,7 +162,6 @@ function renderList() {
       r('li', null,
         r('button', {
           type: 'button',
-          style: Styles.downloadIndividualResourceButton,
           onClick() { download(editedFilename, files.read(filename)) }
         }, editedFilename)))
 }
