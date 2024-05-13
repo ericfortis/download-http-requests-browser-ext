@@ -1,4 +1,4 @@
-const { TarWriter } = window.tarjs
+import { TarWriter } from './node_modules/@gera2ld/tarjs/dist/index.mjs'
 
 export const files = new class {
   #filterString = ''
