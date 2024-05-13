@@ -1,6 +1,6 @@
 import { files } from './files.js'
 import { mime } from './mime.js'
-import { urlHostname, useRef, download, createElement } from './utils.js'
+import { urlHostname, useRef, download, createElement as r } from './utils.js'
 
 
 const Strings = {
@@ -39,7 +39,6 @@ function registerRequest(request) {
   renderList() // full render to avoid duplicate request entries
 }
 
-const r = createElement
 const refReqList = useRef()
 
 function App() {
