@@ -16,7 +16,7 @@ export const files = new class {
   }
   #replaceIds(filename) {
     return this.#shouldReplaceIds
-      ? filename.replaceAll(this.#reUuidV4, '<id>')
+      ? filename.replaceAll(this.#reUuidV4, '[id]')
       : filename
   }
 
