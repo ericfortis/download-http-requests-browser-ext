@@ -1,6 +1,6 @@
 import { files } from './files.js'
 import { mime } from './mime.js'
-import { urlHostname, useRef, download, createElement as r } from './utils.js'
+import { urlHostname, useRef, download, createElement as r, removeTrailingSlash } from './utils.js'
 
 
 const Strings = {
@@ -30,9 +30,11 @@ chrome.devtools.network.onNavigated.addListener(clearList)
 function registerRequest(request) {
   const { url, method } = request.request
   const { status, content } = request.response
+  if (url.startsWith('data:'))
+    return
   if (status !== 200) // Partial Content (e.g. videos) or 304's (cached)
     return
-  const path = new URL(url).pathname
+  const path = removeTrailingSlash(new URL(url).pathname)
   const filename = `${path}.${method}.${status}${mime.extensionFor(content.mimeType)}`
   request.getContent((body, encoding) =>
     files.insert(body, encoding, filename, content.mimeType))

@@ -9,6 +9,10 @@ export function urlHostname() {
   })
 }
 
+export function removeTrailingSlash(path) {
+  return path.replace(/\/$/, '')
+}
+
 // https://stackoverflow.com/a/19328891
 export function download(filename, blob) {
   const url = URL.createObjectURL(blob)
