@@ -4,17 +4,19 @@ import { urlHostname, useRef, download, createElement as r, removeTrailingSlash 
 
 
 const Strings = {
-  download_tar: 'Download Tar',
+  download_tar: 'Download TAR',
   filter: 'Filter',
   panel_title: 'HTTP Requests',
+  regex: 'RegExp?',
   replace_ids: 'Replace GUIDs with placeholder'
 }
 
 const CSS = {
-  Filter: 'Filter',
-  Checkbox: 'Checkbox',
   DownloadTar: 'DownloadTar',
-  FileList: 'FileList'
+  FileList: 'FileList',
+  Filter: 'Filter',
+  FilterIsRegex: 'FilterIsRegex',
+  ReplaceGuids: 'ReplaceGuids',
 }
 
 chrome.devtools.panels.create(Strings.panel_title, '', 'panel.html', panel => {
@@ -46,30 +48,40 @@ const refReqList = useRef()
 function App() {
   return (
     r('div', null,
-      r('label', { className: CSS.Filter }, Strings.filter,
-        r('input', {
-          onKeyUp: function filterFileList() {
-            files.setFilter(this.value)
-            renderList()
+      r('menu', null,
+        r('label', { className: CSS.Filter }, Strings.filter,
+          r('input', {
+            onKeyUp() {
+              files.setFilter(this.value)
+              renderList()
+            }
+          })),
+        r('label', { className: CSS.FilterIsRegex },
+          r('input', {
+            type: 'checkbox',
+            onChange() {
+              files.toggleFilterIsRegex()
+              renderList()
+            }
+          }), Strings.regex),
+        r('label', { className: CSS.ReplaceGuids },
+          r('input', {
+            type: 'checkbox',
+            onChange() {
+              files.toggleReplaceIds()
+              renderList()
+            }
+          }),
+          Strings.replace_ids),
+        r('button', {
+          type: 'button',
+          className: CSS.DownloadTar,
+          async onClick() {
+            const filename = (await urlHostname() || 'requests') + '.tar'
+            download(filename, await files.tar())
           }
-        })),
-      r('label', { className: CSS.Checkbox },
-        r('input', {
-          type: 'checkbox',
-          onChange() {
-            files.toggleReplaceIds()
-            renderList()
-          }
-        }),
-        Strings.replace_ids),
-      r('button', {
-        type: 'button',
-        className: CSS.DownloadTar,
-        async onClick() {
-          const filename = (await urlHostname() || 'requests') + '.tar'
-          download(filename, await files.tar())
-        }
-      }, Strings.download_tar),
+        }, Strings.download_tar)),
+      
       r('ul', {
         ref: refReqList,
         className: CSS.FileList

@@ -1,10 +1,12 @@
-# DevTools extension for exporting HTTP requests as Tar
+# DevTools extension for exporting HTTP requests as TAR
 
 ## Setup
 
 Clone this repo and `npm install`
 
-Then, "Load unpacked" extension, in Chrome
+Then, **Load unpacked** extension in Chrome.
+
+<img src="./README-screenshot.png" style="max-width: 720px" />
 
 ## Filename Convention
 - path
@@ -12,12 +14,7 @@ Then, "Load unpacked" extension, in Chrome
 - response status
 - extension based on the `Content-Type`
 
-<img src="./README-screenshot.png" style="max-width: 540px" />
 
 ## Caveats
 In the tar, the filename is truncated to 100 chars (the tar library uses the original
 POSIX spec). But you can always click the filename to download it individually.
-
-
-## License
-ISC

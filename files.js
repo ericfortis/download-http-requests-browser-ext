@@ -2,11 +2,17 @@ import { TarWriter } from './node_modules/@gera2ld/tarjs/dist/index.mjs'
 
 export const files = new class {
   #filterString = ''
+  #filterIsRegex = false
   #filter(filename) {
-    return filename.includes(this.#filterString)
+    return this.#filterIsRegex 
+      ? new RegExp(this.#filterString).test(filename) 
+      : filename.includes(this.#filterString)
   }
   setFilter(filterText) {
     this.#filterString = filterText
+  }
+  toggleFilterIsRegex() {
+    this.#filterIsRegex = !this.#filterIsRegex
   }
 
   #reUuidV4 = /([0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})/gi
