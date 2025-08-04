@@ -17,6 +17,6 @@ export const mime = new class {
     const ext = this.#extensionsByMime[mimeType]
     return ext
       ? '.' + ext
-      : ''
+      : '.unknown'
   }
 }
