@@ -2,8 +2,8 @@
   "type": "module",
   "author": "Eric Fortis",
   "license": "ISC",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "dependencies": {
-    "@gera2ld/tarjs": "0.3.1"
+    "@zip.js/zip.js": "2.7.72"
   }
 }

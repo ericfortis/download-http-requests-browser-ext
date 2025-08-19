@@ -4,7 +4,7 @@ import { urlHostname, useRef, download, createElement as r, removeTrailingSlash 
 
 
 const Strings = {
-  download_tar: 'Download TAR',
+  download_zip: 'Download ZIP',
   filter: 'Filter',
   panel_title: 'HTTP Requests',
   regex: 'RegExp?',
@@ -12,7 +12,7 @@ const Strings = {
 }
 
 const CSS = {
-  DownloadTar: 'DownloadTar',
+  DownloadZip: 'DownloadZip',
   FileList: 'FileList',
   Filter: 'Filter',
   FilterIsRegex: 'FilterIsRegex',
@@ -75,12 +75,12 @@ function App() {
           Strings.replace_ids),
         r('button', {
           type: 'button',
-          className: CSS.DownloadTar,
+          className: CSS.DownloadZip,
           async onClick() {
-            const filename = (await urlHostname() || 'requests') + '.tar'
-            download(filename, await files.tar())
+            const filename = (await urlHostname() || 'requests') + '.zip'
+            download(filename, await files.zip())
           }
-        }, Strings.download_tar)),
+        }, Strings.download_zip)),
       
       r('ul', {
         ref: refReqList,

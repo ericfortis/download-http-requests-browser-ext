@@ -1,11 +1,12 @@
-import { TarWriter } from './node_modules/@gera2ld/tarjs/dist/index.mjs'
+import { BlobWriter, ZipWriter, BlobReader } from './node_modules/@zip.js/zip.js/index.min.js'
+
 
 export const files = new class {
   #filterString = ''
   #filterIsRegex = false
   #filter(filename) {
-    return this.#filterIsRegex 
-      ? new RegExp(this.#filterString).test(filename) 
+    return this.#filterIsRegex
+      ? new RegExp(this.#filterString).test(filename)
       : filename.includes(this.#filterString)
   }
   setFilter(filterText) {
@@ -43,12 +44,12 @@ export const files = new class {
   }
 
   /** @returns Promise */
-  tar() {
-    const writer = new TarWriter()
-    for (const [filename, body] of this.#files)
+  zip() {
+    const writer = new ZipWriter(new BlobWriter('application/zip'))
+    for (const [filename, blob] of this.#files)
       if (this.#filter(filename))
-        writer.addFile(this.#replaceIds(filename), body)
-    return writer.write()
+        writer.add(this.#replaceIds(filename), new BlobReader(blob))
+    return writer.close()
   }
 
   // https://stackoverflow.com/a/16245768

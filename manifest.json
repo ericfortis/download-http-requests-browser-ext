@@ -1,6 +1,6 @@
 {
-  "name": "devtools-ext-tar-http-requests",
-  "description": "Extension for downloading a tar with the HTTP requests",
+  "name": "devtools-ext-zip-http-requests",
+  "description": "Extension for downloading a ZIP of the HTTP requests responses",
   "manifest_version": 3,
   "version": "1.0",
   "devtools_page": "devtools.html"

@@ -21,7 +21,7 @@ export function download(filename, blob) {
     download: filename
   })
   a.click()
-  URL.revokeObjectURL(url)
+  setTimeout(() => URL.revokeObjectURL(url), 2000)
 }
 
 // API similar to React.createElement

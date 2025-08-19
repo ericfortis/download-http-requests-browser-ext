@@ -1,4 +1,4 @@
-# DevTools extension for exporting HTTP requests as TAR
+# DevTools extension for exporting HTTP requests as ZIP
 
 ## Setup
 
@@ -15,6 +15,3 @@ Then, **Load unpacked** extension in Chrome.
 - extension based on the `Content-Type`
 
 
-## Caveats
-In the tar, the filename is truncated to 100 chars (the tar library uses the original
-POSIX spec). But you can always click the filename to download it individually.
