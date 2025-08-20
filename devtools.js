@@ -4,20 +4,29 @@ import { urlHostname, useRef, download, createElement as r, removeTrailingSlash 
 
 
 const Strings = {
-  download_zip: 'Download ZIP',
+  download: 'Download',
   filter: 'Filter',
-  panel_title: 'HTTP Requests',
+  panel_title: 'Downloader',
   regex: 'RegExp?',
   replace_ids: 'Replace GUIDs with placeholder'
 }
 
 const CSS = {
-  DownloadZip: 'DownloadZip',
+  DownloadAll: 'DownloadAll',
   FileList: 'FileList',
   Filter: 'Filter',
   FilterIsRegex: 'FilterIsRegex',
-  ReplaceGuids: 'ReplaceGuids',
+  ReplaceGuids: 'ReplaceGuids'
 }
+
+const host = await new Promise(resolve => {
+  chrome.devtools.inspectedWindow.eval(
+    'window.location.host',
+    (result, isException) => {
+      if (!isException) resolve(result)
+    }
+  )
+})
 
 chrome.devtools.panels.create(Strings.panel_title, '', 'panel.html', panel => {
   panel.onShown.addListener(function initOnce(win) {
@@ -27,7 +36,6 @@ chrome.devtools.panels.create(Strings.panel_title, '', 'panel.html', panel => {
 })
 chrome.devtools.network.onRequestFinished.addListener(registerRequest)
 chrome.devtools.network.onNavigated.addListener(clearList)
-
 
 function registerRequest(request) {
   const { url, method } = request.request
@@ -75,13 +83,10 @@ function App() {
           Strings.replace_ids),
         r('button', {
           type: 'button',
-          className: CSS.DownloadZip,
-          async onClick() {
-            const filename = (await urlHostname() || 'requests') + '.zip'
-            download(filename, await files.zip())
-          }
-        }, Strings.download_zip)),
-      
+          className: CSS.DownloadAll,
+          onClick() { files.saveAll(host) }
+        }, Strings.download)),
+
       r('ul', {
         ref: refReqList,
         className: CSS.FileList

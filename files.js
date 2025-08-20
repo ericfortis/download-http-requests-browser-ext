@@ -1,6 +1,3 @@
-import { BlobWriter, ZipWriter, BlobReader } from './node_modules/@zip.js/zip.js/index.min.js'
-
-
 export const files = new class {
   #filterString = ''
   #filterIsRegex = false
@@ -43,13 +40,29 @@ export const files = new class {
     this.#files.set(filename, new Blob([data], { type: mimeType }))
   }
 
-  /** @returns Promise */
-  zip() {
-    const writer = new ZipWriter(new BlobWriter('application/zip'))
-    for (const [filename, blob] of this.#files)
-      if (this.#filter(filename))
-        writer.add(this.#replaceIds(filename), new BlobReader(blob))
-    return writer.close()
+  // TODO handle large files (chunk)
+  // TODO document dot files names
+  async saveAll(host) {
+    const folder = `${host}_${uniqueFolderSuffix()}`
+
+    for (const [filename, blob] of this.#files) {
+      if (!this.#filter(filename))
+        continue
+
+      const safeFilename = this.#replaceIds(filename)
+        .replace(/\/\./g, '/_.') // rename dot files with _.
+
+      let binary = ''
+      const bytes = new Uint8Array(await blob.arrayBuffer())
+      for (let i = 0; i < bytes.length; i++)
+        binary += String.fromCharCode(bytes[i])
+
+      chrome.runtime.sendMessage({
+        action: 'DOWNLOAD_FILE',
+        filename: folder + '/' + safeFilename,
+        url: `data:application/octet-stream;base64,${btoa(binary)}`
+      })
+    }
   }
 
   // https://stackoverflow.com/a/16245768
@@ -60,4 +73,18 @@ export const files = new class {
       bytes[i] = decoded.charCodeAt(i)
     return bytes
   }
+}
+
+function uniqueFolderSuffix() {
+  return new Date().toLocaleString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  })
+    .replace(/[\/\\:*?"<>|]/g, '-')
+    .replace(/,?\s+/g, '_')
 }

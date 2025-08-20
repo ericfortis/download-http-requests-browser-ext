@@ -2,8 +2,5 @@
   "type": "module",
   "author": "Eric Fortis",
   "license": "ISC",
-  "version": "0.2.0",
-  "dependencies": {
-    "@zip.js/zip.js": "2.7.72"
-  }
+  "version": "0.3.0"
 }

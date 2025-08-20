@@ -1,8 +1,8 @@
-# DevTools extension for exporting HTTP requests as ZIP
+# Browser extension for downloading HTTP request responses
 
 ## Setup
 
-Clone this repo and `npm install`
+Clone this repo.
 
 Then, **Load unpacked** extension in Chrome.
 

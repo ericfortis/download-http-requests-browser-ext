@@ -1,7 +1,11 @@
 {
-  "name": "devtools-ext-zip-http-requests",
-  "description": "Extension for downloading a ZIP of the HTTP requests responses",
+  "name": "download-http-requests",
+  "description": "Browser extension for downloading HTTP request responses",
   "manifest_version": 3,
   "version": "1.0",
-  "devtools_page": "devtools.html"
+  "permissions": ["downloads"],
+  "devtools_page": "devtools.html",
+  "background": {
+    "service_worker": "background.js"
+  }
 }
