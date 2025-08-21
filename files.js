@@ -24,42 +24,58 @@ export const files = new class {
       : filename
   }
 
+  useMockatonExt = true
+  toggleUseMockatonExt() {
+    this.useMockatonExt = !this.useMockatonExt
+  }
+
   #files = new Map()
   read(filename) {
-    return this.#files.get(filename)
+    return this.#files.get(filename).blob
   }
-  listFiltered() {
-    return this.#files.keys()
-      .filter(f => this.#filter(f))
-      .map(f => [f, this.#replaceIds(f)])
-  }
-  insert(body, encoding, filename, mimeType) {
+  insert(body, encoding, filename, mockatonFilename, mimeType) {
     const data = encoding === 'base64'
       ? this.#base64ToByteArray(body)
       : body
-    this.#files.set(filename, new Blob([data], { type: mimeType }))
+    this.#files.set(
+      mockatonFilename,
+      {
+        path: filename,
+        blob: new Blob([data], { type: mimeType })
+      }
+    )
   }
 
-  // TODO handle large files (chunk)
-  // TODO document dot files names
-  async saveAll(host) {
-    const folder = `${host}_${uniqueFolderSuffix()}`
-
-    for (const [filename, blob] of this.#files) {
+  listFiltered() {
+    const result = []
+    for (const [mockatonFilename, { blob, path }] of this.#files) {
+      const filename = this.useMockatonExt
+        ? mockatonFilename
+        : path
       if (!this.#filter(filename))
         continue
 
       const safeFilename = this.#replaceIds(filename)
-        .replace(/\/\./g, '/_.') // rename dot files with _.
+        .replace(/\/\./g, '/_.') // renames dot files with _.
+      result.push([safeFilename, mockatonFilename])
+    }
+    return result
+  }
 
+  // TODO handle large files (chunk)
+  // TODO document dot files names get renamed
+  async saveAll(host) {
+    const folder = `${host}_${uniqueFolderSuffix()}`
+
+    for (const [filename, mockatonFilename] of this.listFiltered()) {
       let binary = ''
-      const bytes = new Uint8Array(await blob.arrayBuffer())
+      const bytes = new Uint8Array(await this.read(mockatonFilename).arrayBuffer())
       for (let i = 0; i < bytes.length; i++)
         binary += String.fromCharCode(bytes[i])
 
       chrome.runtime.sendMessage({
         action: 'DOWNLOAD_FILE',
-        filename: folder + '/' + safeFilename,
+        filename: folder + '/' + filename,
         url: `data:application/octet-stream;base64,${btoa(binary)}`
       })
     }

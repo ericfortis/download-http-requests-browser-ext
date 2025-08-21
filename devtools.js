@@ -8,7 +8,8 @@ const Strings = {
   filter: 'Filter',
   panel_title: 'Downloader',
   regex: 'RegExp?',
-  replace_ids: 'Replace GUIDs with placeholder'
+  replace_ids: 'Replace GUIDs with placeholder',
+  use_mockaton_ext: 'Use Mockaton Ext. Convention',
 }
 
 const CSS = {
@@ -16,7 +17,8 @@ const CSS = {
   FileList: 'FileList',
   Filter: 'Filter',
   FilterIsRegex: 'FilterIsRegex',
-  ReplaceGuids: 'ReplaceGuids'
+  ReplaceGuids: 'ReplaceGuids',
+  UseMockatonExt: 'UseMockatonExt',
 }
 
 const host = await new Promise(resolve => {
@@ -46,9 +48,9 @@ function registerRequest(request) {
     return
   const path = removeTrailingSlash(new URL(url).pathname)
   const ext = mime.extensionFor(content.mimeType) || path.split('.').pop() || 'unknown'
-  const filename = `${path}.${method}.${status}.${ext}`
+  const mockatonFilename = `${path}.${method}.${status}.${ext}` 
   request.getContent((body, encoding) =>
-    files.insert(body, encoding, filename, content.mimeType))
+    files.insert(body, encoding, path, mockatonFilename, content.mimeType))
   renderList() // full render to avoid duplicate request entries
 }
 
@@ -82,6 +84,16 @@ function App() {
             }
           }),
           Strings.replace_ids),
+        r('label', { className: CSS.UseMockatonExt },
+          r('input', {
+            type: 'checkbox',
+            checked: files.useMockatonExt,
+            onChange() {
+              files.toggleUseMockatonExt()
+              renderList()
+            }
+          }),
+          Strings.use_mockaton_ext),
         r('button', {
           type: 'button',
           className: CSS.DownloadAll,
@@ -100,13 +112,13 @@ function renderList() {
     return
 
   clearList()
-  for (const [filename, editedFilename] of files.listFiltered())
+  for (const [filename, mockatonFilename] of files.listFiltered())
     refReqList.current.appendChild(
       r('li', null,
         r('button', {
           type: 'button',
-          onClick() { download(editedFilename, files.read(filename)) }
-        }, editedFilename)))
+          onClick() { download(filename, files.read(mockatonFilename)) }
+        }, filename)))
 }
 
 function clearList() {
