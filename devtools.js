@@ -45,7 +45,8 @@ function registerRequest(request) {
   if (status !== 200) // Partial Content (e.g. videos) or 304's (cached)
     return
   const path = removeTrailingSlash(new URL(url).pathname)
-  const filename = `${path}.${method}.${status}${mime.extensionFor(content.mimeType)}`
+  const ext = mime.extensionFor(content.mimeType) || path.split('.').pop() || 'unknown'
+  const filename = `${path}.${method}.${status}.${ext}`
   request.getContent((body, encoding) =>
     files.insert(body, encoding, filename, content.mimeType))
   renderList() // full render to avoid duplicate request entries
