@@ -1,5 +1,12 @@
 export const mime = new class {
-  #extensionsByMime = {
+  #mimeToExt = {}
+  constructor() {
+    for (const [ext, mime] of Object.entries(this.#extToMime)) {
+      this.#mimeToExt[mime] = ext
+    } 
+    this['text/javascript'] = 'js'
+  }
+  #extToMime = {
     '3g2': 'video/3gpp2',
     '3gp': 'video/3gpp',
     '7z': 'application/x-7z-compressed',
@@ -32,7 +39,7 @@ export const mime = new class {
     jar: 'application/java-archive',
     jpeg: 'image/jpeg',
     jpg: 'image/jpeg',
-    js: 'text/javascript',
+    js: 'application/javascript',
     json: 'application/json',
     jsonld: 'application/ld+json',
     mid: 'audio/midi',
@@ -81,6 +88,6 @@ export const mime = new class {
     zip: 'application/zip'
   }
   extensionFor(mimeType) {
-    return this.#extensionsByMime[mimeType] || ''
+    return this.#mimeToExt[mimeType] || ''
   }
 }

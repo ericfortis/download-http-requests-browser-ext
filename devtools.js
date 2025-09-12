@@ -4,22 +4,26 @@ import { urlHostname, useRef, download, createElement as r, removeTrailingSlash 
 
 
 const Strings = {
+  clear: 'Clear',
   download: 'Download',
   filter: 'Filter',
   panel_title: 'Downloader',
   regex: 'RegExp?',
   replace_ids: 'Replace GUIDs with placeholder',
-  use_mockaton_ext: 'Use Mockaton Ext. Convention',
+  use_mockaton_ext: 'Use Mockaton Ext. Convention'
 }
 
 const CSS = {
-  DownloadAll: 'DownloadAll',
-  FileList: 'FileList',
-  Filter: 'Filter',
-  FilterIsRegex: 'FilterIsRegex',
-  ReplaceGuids: 'ReplaceGuids',
-  UseMockatonExt: 'UseMockatonExt',
+  ClearList: null,
+  DownloadAll: null,
+  FileList: null,
+  Filter: null,
+  FilterIsRegex: null,
+  ReplaceGuids: null,
+  UseMockatonExt: null
 }
+for (const k of Object.keys(CSS))
+  CSS[k] = k
 
 const host = await new Promise(resolve => {
   chrome.devtools.inspectedWindow.eval(
@@ -47,8 +51,8 @@ function registerRequest(request) {
   if (status !== 200) // Partial Content (e.g. videos) or 304's (cached)
     return
   const path = removeTrailingSlash(new URL(url).pathname)
-  const ext = mime.extensionFor(content.mimeType) || path.split('.').pop() || 'unknown'
-  const mockatonFilename = `${path}.${method}.${status}.${ext}` 
+  const ext = mime.extensionFor(content.mimeType) || 'unknown'
+  const mockatonFilename = `${path}.${method}.${status}.${ext}`
   request.getContent((body, encoding) =>
     files.insert(body, encoding, path, mockatonFilename, content.mimeType))
   renderList() // full render to avoid duplicate request entries
@@ -98,7 +102,15 @@ function App() {
           type: 'button',
           className: CSS.DownloadAll,
           onClick() { files.saveAll(host) }
-        }, Strings.download)),
+        }, Strings.download),
+        r('button', {
+          type: 'button',
+          className: CSS.ClearList,
+          onClick() {
+            files.clearList(host)
+            renderList()
+          }
+        }, Strings.clear)),
 
       r('ul', {
         ref: refReqList,

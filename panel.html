@@ -9,8 +9,12 @@
     }
 
     menu {
+      position: sticky;
+      top: 0;
       padding: 4px 9px;
       border-bottom: 1px solid #ddd;
+      background: white;
+      z-index: 100;
       margin: 0;
 
       .Filter {
@@ -37,12 +41,13 @@
         }
       }
 
-      .ReplaceGuids, 
+      .ReplaceGuids,
       .UseMockatonExt {
         margin-left: 20px;
       }
 
-      .DownloadAll {
+      .DownloadAll,
+      .ClearList {
         padding: 4px 10px;
         border: 0;
         margin-left: 20px;
@@ -50,6 +55,11 @@
         color: white;
         border-radius: 4px;
         cursor: pointer;
+      }
+
+      .ClearList {
+        margin-left: 8px;
+        background: #bd0707;
       }
     }
 

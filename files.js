@@ -45,6 +45,10 @@ export const files = new class {
       }
     )
   }
+  
+  clearList() {
+    this.#files.clear()
+  }
 
   listFiltered() {
     const result = []
@@ -61,7 +65,8 @@ export const files = new class {
     }
     return result
   }
-
+  
+  
   // TODO handle large files (chunk)
   // TODO document dot files names get renamed
   async saveAll(host) {
