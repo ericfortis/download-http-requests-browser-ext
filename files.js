@@ -35,7 +35,7 @@ export const files = new class {
   }
   insert(body, encoding, filename, mockatonFilename, mimeType) {
     const data = encoding === 'base64'
-      ? this.#base64ToByteArray(body)
+      ? Uint8Array.fromBase64(body)
       : body
     this.#files.set(
       mockatonFilename,
@@ -73,26 +73,13 @@ export const files = new class {
     const folder = `${host}_${uniqueFolderSuffix()}`
 
     for (const [filename, mockatonFilename] of this.listFiltered()) {
-      let binary = ''
-      const bytes = new Uint8Array(await this.read(mockatonFilename).arrayBuffer())
-      for (let i = 0; i < bytes.length; i++)
-        binary += String.fromCharCode(bytes[i])
-
-      chrome.runtime.sendMessage({
+      const b64 = new Uint8Array(await this.read(mockatonFilename).arrayBuffer()).toBase64()
+      await chrome.runtime.sendMessage({
         action: 'DOWNLOAD_FILE',
         filename: folder + '/' + filename,
-        url: `data:application/octet-stream;base64,${btoa(binary)}`
+        url: `data:application/octet-stream;base64,${b64}`
       })
     }
-  }
-
-  // https://stackoverflow.com/a/16245768
-  #base64ToByteArray(text) {
-    const decoded = atob(text)
-    const bytes = new Uint8Array(decoded.length)
-    for (let i = 0; i < decoded.length; i++)
-      bytes[i] = decoded.charCodeAt(i)
-    return bytes
   }
 }
 
